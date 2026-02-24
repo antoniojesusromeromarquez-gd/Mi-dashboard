@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Dashboard de Trabajo</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: "Segoe UI", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        main {
+            background-color: #1e1e1e;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
+            width: 400px;
+            text-align: center;
+            border: 1px solid #333;
+        }
+        h1 {
+            font-size: 1.2rem;
+            color: #888;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        #clock {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #00adb5;
+            margin-bottom: 30px;
+            text-shadow: 0 0 20px rgba(0, 173, 181, 0.3);
+        }
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        input {
+            background: #2d2d2d;
+            border: 1px solid #3d3d3d;
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            flex-grow: 1;
+            outline: none;
+        }
+        button {
+            background-color: #00adb5;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: #007c82;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        li {
+            background: #262626;
+            margin-bottom: 8px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 5px solid #00adb5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Productividad</h1>
+        <div id="clock">00:00:00</div>
+        <div class="input-group">
+            <input type="text" id="task-input" placeholder="¿Qué toca hacer ahora?">
+            <button id="add-btn">Añadir</button>
+        </div>
+        <ul id="task-list"></ul>
+    </main>
+
+    <script>
+        // 1. Reloj en tiempo real
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            document.getElementById("clock").textContent = timeString;
+        }
+        setInterval(updateClock, 1000); // Corregido: updateClock en minúscula
+        updateClock();
+
+        // 2. Lógica de Tareas
+        const input = document.getElementById('task-input');
+        const btn = document.getElementById('add-btn');
+        const list = document.getElementById('task-list');
+
+        function saveTasks() {
+            const tasks = [];
+            document.querySelectorAll('#task-list li span').forEach(taskSpan => {
+                tasks.push(taskSpan.textContent);
+            });
+            localStorage.setItem('mis-tareas', JSON.stringify(tasks));
+        }
+
+        function loadTasks() {
+            const savedTasks = JSON.parse(localStorage.getItem('mis-tareas')); // Corregido: "=" en lugar de ":"
+            if (savedTasks) {
+                savedTasks.forEach(taskText => {
+                    renderTask(taskText);
+                });
+            }
+        }
+
+        function renderTask(text) {
+            const newItem = document.createElement('li');
+            newItem.innerHTML = `
+                <span>${text}</span>
+                <small style="color: #666; cursor:pointer; margin-left: 10px;" onclick="removeTask(this)">✕</small>
+            `; // Corregido: comillas en onclick
+            list.appendChild(newItem);
+        }
+
+        function addTask() {
+            if (input.value.trim() !== "") {
+                renderTask(input.value);
+                saveTasks();
+                input.value = "";
+            }
+        }
+
+        function removeTask(element) {
+            element.parentElement.remove();
+            saveTasks();
+        }
+
+        btn.onclick = addTask;
+        input.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") addTask();
+        });
+
+        loadTasks();
+    </script>
+</body>
+</html>
